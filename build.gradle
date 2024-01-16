@@ -1,0 +1,89 @@
+plugins {
+    id 'java'
+    id 'maven-publish'
+}
+
+compileJava.options.encoding = "UTF-8"
+compileTestJava.options.encoding = "UTF-8"
+
+apply plugin: 'maven-publish'
+
+group 'cn.sichuancredit.apigateway'
+version '0.0.1'
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+repositories {
+    maven { url 'https://maven.aliyun.com/repository/public/' }
+    mavenLocal()
+    mavenCentral()
+    maven {
+        credentials {
+            username SICHUANCREDIT_USERNAME
+            password SICHUANCREDIT_PASSWORD
+        }
+        url 'https://nexus.sichuancredit.cn/repository/maven-releases/'
+        authentication {
+            basic(BasicAuthentication)
+        }
+    }
+}
+
+dependencies {
+    // encryption
+    implementation 'cn.hutool:hutool-all:5.8.23'
+    implementation 'org.apache.commons:commons-lang3:3.13.0'
+    implementation 'org.bouncycastle:bcprov-jdk15to18:1.69'
+
+    implementation group: 'commons-cli', name: 'commons-cli', version: '1.5.0'
+    implementation group: 'commons-io', name: 'commons-io', version: '2.14.0'
+
+    implementation group: 'com.google.guava', name: 'guava', version: '28.1-jre'
+    implementation group: 'com.alibaba.fastjson2', name: 'fastjson2', version: '2.0.33'
+
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
+    implementation 'com.konghq:unirest-java:3.11.09:standalone'
+    implementation group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+    testCompileOnly 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.30'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            groupId = group
+            artifactId = 'sdk'
+            version = version
+        }
+    }
+    repositories {
+        maven {
+            credentials {
+                username = 'sichuancredit'
+                password = '0L2QYx'
+            }
+            url 'https://nexus.sichuancredit.cn/repository/maven-releases/'
+            authentication {
+                basic(BasicAuthentication)
+            }
+        }
+    }
+}
+
+
