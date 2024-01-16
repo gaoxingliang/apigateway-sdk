@@ -23,16 +23,6 @@ repositories {
     maven { url 'https://maven.aliyun.com/repository/public/' }
     mavenLocal()
     mavenCentral()
-    maven {
-        credentials {
-            username SICHUANCREDIT_USERNAME
-            password SICHUANCREDIT_PASSWORD
-        }
-        url 'https://nexus.sichuancredit.cn/repository/maven-releases/'
-        authentication {
-            basic(BasicAuthentication)
-        }
-    }
 }
 
 dependencies {
@@ -75,8 +65,8 @@ publishing {
     repositories {
         maven {
             credentials {
-                username = 'sichuancredit'
-                password = '0L2QYx'
+                username = SICHUANCREDIT_USERNAME
+                password = SICHUANCREDIT_PASSWORD
             }
             url 'https://nexus.sichuancredit.cn/repository/maven-releases/'
             authentication {
