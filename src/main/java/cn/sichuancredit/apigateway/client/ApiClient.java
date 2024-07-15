@@ -54,7 +54,13 @@ public class ApiClient {
         GetRequest request =  Unirest.get(apiConfig.url + path)
                 .header(HttpHeaders.AUTHORIZATION, token);
         if (queryParameters != null) {
-            request.queryString(queryParameters);
+            queryParameters.forEach((k,v) -> {
+                if (v instanceof Collection) {
+                    request.queryString(k, (Collection) v);
+                } else {
+                    request.queryString(k, v);
+                }
+            });
         }
         HttpResponse<String> response;
         try {
