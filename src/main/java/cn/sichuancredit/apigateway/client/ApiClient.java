@@ -1,11 +1,13 @@
 package cn.sichuancredit.apigateway.client;
 
+import cn.hutool.core.util.*;
 import cn.sichuancredit.apigateway.encryption.*;
 import com.alibaba.fastjson2.*;
 import kong.unirest.HttpResponse;
 import kong.unirest.*;
 import org.apache.http.*;
 
+import java.io.*;
 import java.util.*;
 
 public class ApiClient {
@@ -78,6 +80,15 @@ public class ApiClient {
                 result = MySmUtil.sm4Decrypt(responseEncryptedData.getData(), sm4Key);
             } catch (Exception e) {
                 throw new ApiException("解密失败:" + response.getStatus() + " 消息体:" + response.getBody() + " 消息头：" + response.getHeaders(), e);
+            }
+        }
+        // 需要解压缩的场景
+        String zipVersion = response.getHeaders().getFirst("internal-zip-version");
+        if (zipVersion != null && Integer.valueOf(zipVersion) == 1) {
+            try {
+                result = new String(ZipUtil.unGzip(Base64.getDecoder().decode(result)), "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                throw new IllegalArgumentException(e);
             }
         }
 
