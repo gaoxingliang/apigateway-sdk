@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'maven-publish'
+    id 'org.jreleaser' version '1.13.1'
 }
 
 compileJava.options.encoding = "UTF-8"
@@ -8,8 +9,8 @@ compileTestJava.options.encoding = "UTF-8"
 
 apply plugin: 'maven-publish'
 
-group 'cn.sichuancredit.apigateway'
-version '0.0.3'
+group 'io.github.gaoxingliang:apigateway'
+version '0.0.4'
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
@@ -55,25 +56,59 @@ test {
 
 publishing {
     publications {
-        mavenJava(MavenPublication) {
+        maven(MavenPublication) {
+            groupId =  "io.github.gaoxingliang"
+            artifactId = 'apigateway-sdk'
+
             from components.java
-            groupId = group
-            artifactId = 'sdk'
-            version = version
+
+            pom {
+                name = 'apigateway-sdk'
+                description = '四川征信api网关的示例sdk。'
+                url = 'https://github.com/gaoxingliang/apigateway-sdk'
+                inceptionYear = '2024'
+                licenses {
+                    license {
+                        name = 'Apache-2.0'
+                        url = 'https://spdx.org/licenses/Apache-2.0.html'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'gaoxingliang'
+                        name = 'gaoxingliang'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:https://github.com/gaoxingliang/apigateway-sdk.git'
+                    developerConnection = 'scm:git:ssh://github.com/gaoxingliang/apigateway-sdk.git'
+                    url = 'https://github.com/gaoxingliang/apigateway-sdk.git'
+                }
+            }
         }
     }
+
     repositories {
         maven {
-            credentials {
-                username = SICHUANCREDIT_USERNAME
-                password = SICHUANCREDIT_PASSWORD
-            }
-            url 'https://nexus.sichuancredit.cn/repository/maven-releases/'
-            authentication {
-                basic(BasicAuthentication)
-            }
+            url = layout.buildDirectory.dir('staging-deploy')
         }
     }
 }
 
-
+jreleaser {
+    signing {
+        active = 'ALWAYS'
+        armored = true
+    }
+    deploy {
+        maven {
+            mavenCentral {
+                sonatype {
+                    active = 'ALWAYS'
+                    url = 'https://central.sonatype.com/api/v1/publisher'
+                    stagingRepository('target/staging-deploy')
+                }
+            }
+        }
+    }
+}

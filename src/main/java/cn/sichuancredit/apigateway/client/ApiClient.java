@@ -5,6 +5,7 @@ import cn.sichuancredit.apigateway.encryption.*;
 import com.alibaba.fastjson2.*;
 import kong.unirest.HttpResponse;
 import kong.unirest.*;
+import org.apache.commons.lang3.*;
 import org.apache.http.*;
 
 import java.io.*;
@@ -84,7 +85,7 @@ public class ApiClient {
         }
         // 需要解压缩的场景
         String zipVersion = response.getHeaders().getFirst("internal-zip-version");
-        if (zipVersion != null && Integer.valueOf(zipVersion) == 1) {
+        if (StringUtils.isNotEmpty(zipVersion) && Integer.valueOf(zipVersion) == 1) {
             try {
                 result = new String(ZipUtil.unGzip(Base64.getDecoder().decode(result)), "UTF-8");
             } catch (UnsupportedEncodingException e) {
