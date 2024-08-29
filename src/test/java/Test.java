@@ -9,7 +9,7 @@ public class Test {
         config.setPassword("passwordXXX");
         config.setUrl("http://devicbc.sichuancredit.cn:88");
         config.setPrivateKey("yourPrivateKey");
-        config.setPublicKey("yourPublicKey");
+        config.setPublicKey("publicKeyWeProvided");
 
         ApiClient apiClient = new ApiClient(config);
         Map<String, Object> params = new HashMap<>();

@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'java-library'
     id 'maven-publish'
     id 'org.jreleaser' version '1.13.1'
 }
@@ -9,8 +10,8 @@ compileTestJava.options.encoding = "UTF-8"
 
 apply plugin: 'maven-publish'
 
-group 'io.github.gaoxingliang:apigateway'
-version '0.0.4'
+group 'io.gitee.gaoxingliang:apigateway-sdk'
+version '0.0.5'
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
@@ -24,6 +25,11 @@ repositories {
     maven { url 'https://maven.aliyun.com/repository/public/' }
     mavenLocal()
     mavenCentral()
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
 }
 
 dependencies {
@@ -57,7 +63,7 @@ test {
 publishing {
     publications {
         maven(MavenPublication) {
-            groupId =  "io.github.gaoxingliang"
+            groupId =  "io.gitee.gaoxingliang"
             artifactId = 'apigateway-sdk'
 
             from components.java
@@ -65,7 +71,7 @@ publishing {
             pom {
                 name = 'apigateway-sdk'
                 description = '四川征信api网关的示例sdk。'
-                url = 'https://github.com/gaoxingliang/apigateway-sdk'
+                url = 'https://gitee.com/gaoxingliang/apigateway-sdk'
                 inceptionYear = '2024'
                 licenses {
                     license {
@@ -80,9 +86,9 @@ publishing {
                     }
                 }
                 scm {
-                    connection = 'scm:git:https://github.com/gaoxingliang/apigateway-sdk.git'
-                    developerConnection = 'scm:git:ssh://github.com/gaoxingliang/apigateway-sdk.git'
-                    url = 'https://github.com/gaoxingliang/apigateway-sdk.git'
+                    connection = 'scm:git:https://gitee.com/gaoxingliang/apigateway-sdk.git'
+                    developerConnection = 'scm:git:ssh://gitee.com/gaoxingliang/apigateway-sdk.git'
+                    url = 'https://gitee.com/gaoxingliang/apigateway-sdk.git'
                 }
             }
         }
@@ -90,7 +96,7 @@ publishing {
 
     repositories {
         maven {
-            url = layout.buildDirectory.dir('staging-deploy')
+            url = layout.projectDirectory.dir('build/staging-deploy')
         }
     }
 }
@@ -99,14 +105,27 @@ jreleaser {
     signing {
         active = 'ALWAYS'
         armored = true
+        mode = 'FILE'
+        publicKey = '/Users/edward/.jreleaser/public.pgp'
+        secretKey = '/Users/edward/.jreleaser/private.pgp'
     }
     deploy {
         maven {
+//            nexus2 {
+//                'maven-central' {
+//                    active = 'ALWAYS'
+//                    url = 'https://s01.oss.sonatype.org/service/local'
+//                    snapshotUrl = 'https://s01.oss.sonatype.org/content/repositories/snapshots/'
+//                    closeRepository = true
+//                    releaseRepository = true
+//                    stagingRepository('build/staging-deploy'
+//                }
+//            }
             mavenCentral {
                 sonatype {
                     active = 'ALWAYS'
                     url = 'https://central.sonatype.com/api/v1/publisher'
-                    stagingRepository('target/staging-deploy')
+                    stagingRepository('build/staging-deploy')
                 }
             }
         }
