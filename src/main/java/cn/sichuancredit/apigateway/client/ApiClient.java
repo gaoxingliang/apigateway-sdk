@@ -5,18 +5,31 @@ import cn.sichuancredit.apigateway.encryption.*;
 import com.alibaba.fastjson2.*;
 import kong.unirest.HttpResponse;
 import kong.unirest.*;
+import org.apache.commons.lang3.*;
 import org.apache.http.*;
 
 import java.io.*;
 import java.util.*;
 
 public class ApiClient {
+    private final UnirestInstance instance;
     private final ApiConfig apiConfig;
     private volatile String token;
     private volatile long tokenCreatedTime;
 
     public ApiClient(ApiConfig apiConfig) {
         this.apiConfig = apiConfig;
+        Config config = new Config();
+        if (apiConfig.connectTimeoutInSeconds > 0) {
+            config.connectTimeout(apiConfig.connectTimeoutInSeconds * 1000);
+        }
+        if (apiConfig.readTimeoutInSeconds > 0) {
+            config.socketTimeout(apiConfig.readTimeoutInSeconds * 1000);
+        }
+        if (apiConfig.proxyHost != null) {
+            config.proxy(apiConfig.proxyHost, apiConfig.proxyPort, apiConfig.username, apiConfig.password);
+        }
+        instance = new UnirestInstance(config);
     }
 
     private synchronized void createTokenIfNeeded() {
@@ -27,7 +40,7 @@ public class ApiClient {
             d.put("password", apiConfig.password);
             HttpResponse<String> response;
             try {
-                response = Unirest.post(apiConfig.url + "/auth/token")
+                response = instance.post(apiConfig.url + "/auth/token")
                         .header("Content-Type", "application/json")
                         .body(d.toString())
                         .asString();
@@ -46,17 +59,17 @@ public class ApiClient {
     }
 
     private void checkResponse(HttpResponse<String> response) {
-        if (response.getStatus()!= 200 || !response.isSuccess()) {
+        if (response.getStatus() != 200 || !response.isSuccess()) {
             throw new ApiException("请求失败:" + response.getStatus() + " 消息体:" + response.getBody() + " 消息头：" + response.getHeaders());
         }
     }
 
     public String get(String path, Map<String, Object> queryParameters, boolean needDecryption) {
         createTokenIfNeeded();
-        GetRequest request =  Unirest.get(apiConfig.url + path)
+        GetRequest request = instance.get(apiConfig.url + path)
                 .header(HttpHeaders.AUTHORIZATION, token);
         if (queryParameters != null) {
-            queryParameters.forEach((k,v) -> {
+            queryParameters.forEach((k, v) -> {
                 if (v instanceof Collection) {
                     request.queryString(k, (Collection) v);
                 } else {
@@ -84,7 +97,7 @@ public class ApiClient {
         }
         // 需要解压缩的场景
         String zipVersion = response.getHeaders().getFirst("internal-zip-version");
-        if (zipVersion != null && Integer.valueOf(zipVersion) == 1) {
+        if (StringUtils.isNotEmpty(zipVersion) && Integer.valueOf(zipVersion) == 1) {
             try {
                 result = new String(ZipUtil.unGzip(Base64.getDecoder().decode(result)), "UTF-8");
             } catch (UnsupportedEncodingException e) {

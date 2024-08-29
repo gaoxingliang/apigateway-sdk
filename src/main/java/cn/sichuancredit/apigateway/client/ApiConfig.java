@@ -2,8 +2,6 @@ package cn.sichuancredit.apigateway.client;
 
 import lombok.*;
 
-import java.net.*;
-
 @Setter
 @Getter
 @NoArgsConstructor
@@ -13,8 +11,11 @@ public class ApiConfig {
     String publicKey;
     String privateKey;
     String url;
-    int tokenExpireTimeInSeconds;
+    int tokenExpireTimeInSeconds = 60 * 30;
     int readTimeoutInSeconds = 45;
     int connectTimeoutInSeconds = 10;
-    Proxy proxy;
+    String proxyHost;
+    int proxyPort;
+    String proxyUserName;
+    String proxyPassword;
 }
