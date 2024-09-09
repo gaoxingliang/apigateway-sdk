@@ -29,6 +29,8 @@ public class ApiClient {
         if (apiConfig.proxyHost != null) {
             config.proxy(apiConfig.proxyHost, apiConfig.proxyPort, apiConfig.username, apiConfig.password);
         }
+        config.automaticRetries(apiConfig.automaticRetries);
+        config.verifySsl(false);
         instance = new UnirestInstance(config);
     }
 

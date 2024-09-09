@@ -13,7 +13,7 @@ mvn:
 <dependency>
     <groupId>io.gitee.gaoxingliang</groupId>
     <artifactId>apigateway-sdk</artifactId>
-    <version>0.0.5</version>
+    <version>0.0.6</version>
 </dependency>
 ```
 - step 2 refer to test case:
@@ -52,7 +52,7 @@ So the commands are:<br>
 ./gradlew clean
 ./gradlew publish
 ./gradlew jreleaserFullRelease
-# upload this bundle zip:
+# upload this bundle zip to: https://central.sonatype.com/publishing
 ls ./build/jreleaser/deploy/mavenCentral/sonatype
 ```
 <br>

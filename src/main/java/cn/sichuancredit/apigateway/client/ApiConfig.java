@@ -18,4 +18,5 @@ public class ApiConfig {
     int proxyPort;
     String proxyUserName;
     String proxyPassword;
+    boolean automaticRetries = false;
 }
