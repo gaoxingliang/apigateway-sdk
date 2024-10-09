@@ -11,7 +11,7 @@ compileTestJava.options.encoding = "UTF-8"
 apply plugin: 'maven-publish'
 
 group 'io.gitee.gaoxingliang:apigateway-sdk'
-version '0.0.6'
+version '0.0.7'
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
@@ -36,12 +36,12 @@ dependencies {
     // encryption
     implementation 'cn.hutool:hutool-all:5.8.23'
     implementation 'org.apache.commons:commons-lang3:3.13.0'
-    implementation 'org.bouncycastle:bcprov-jdk15to18:1.69'
+    implementation 'org.bouncycastle:bcprov-jdk15to18:1.78.1'
 
     implementation group: 'commons-cli', name: 'commons-cli', version: '1.5.0'
     implementation group: 'commons-io', name: 'commons-io', version: '2.14.0'
 
-    implementation group: 'com.google.guava', name: 'guava', version: '28.1-jre'
+    implementation group: 'com.google.guava', name: 'guava', version: '33.3.1-jre'
     implementation group: 'com.alibaba.fastjson2', name: 'fastjson2', version: '2.0.33'
 
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
