@@ -3,6 +3,7 @@ package cn.sichuancredit.apigateway.client;
 import cn.hutool.core.util.*;
 import cn.sichuancredit.apigateway.encryption.*;
 import com.alibaba.fastjson2.*;
+import kong.unirest.HttpRequest;
 import kong.unirest.HttpResponse;
 import kong.unirest.*;
 import org.apache.commons.lang3.*;
@@ -37,7 +38,7 @@ public class ApiClient {
     private synchronized void createTokenIfNeeded() {
         if (token == null || (apiConfig.tokenExpireTimeInSeconds > 0 && System.currentTimeMillis() - tokenCreatedTime > apiConfig.tokenExpireTimeInSeconds * 1000)) {
             JSONObject d = new JSONObject();
-            d.put("appid", "data");
+            d.put("appid", apiConfig.app);
             d.put("username", apiConfig.username);
             d.put("password", apiConfig.password);
             HttpResponse<String> response;
@@ -66,6 +67,28 @@ public class ApiClient {
         }
     }
 
+    public String postJson(String path, String json, boolean needDecryption) {
+        createTokenIfNeeded();
+        HttpRequestWithBody req = instance.post(apiConfig.url + path).header(HttpHeaders.AUTHORIZATION, token)
+                .contentType(ContentType.APPLICATION_JSON.getMimeType());
+        if (json != null && json.length() > 0) {
+            if (needDecryption) {
+                String key = MySmUtil.generateSm4Key();
+                String encryptKey = MySmUtil.sm2Encrypt(key, apiConfig.publicKey);
+                String data = MySmUtil.sm4Encrypt(json, encryptKey);
+                JSONObject encryptedData = new JSONObject();
+                encryptedData.put("encryptKey", encryptKey);
+                encryptedData.put("data", data);
+                String encryptedJson = encryptedData.toJSONString();
+                req.body(encryptedJson);
+            } else {
+                req.body(json);
+            }
+        }
+
+        return sendOutRequest(needDecryption, req);
+    }
+
     public String get(String path, Map<String, Object> queryParameters, boolean needDecryption) {
         createTokenIfNeeded();
         GetRequest request = instance.get(apiConfig.url + path)
@@ -79,6 +102,11 @@ public class ApiClient {
                 }
             });
         }
+
+        return sendOutRequest(needDecryption, request);
+    }
+
+    private String sendOutRequest(boolean needDecryption, HttpRequest request) {
         HttpResponse<String> response;
         try {
             response = request.asString();

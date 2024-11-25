@@ -19,4 +19,6 @@ public class ApiConfig {
     String proxyUserName;
     String proxyPassword;
     boolean automaticRetries = false;
+
+    String app = "data";
 }
