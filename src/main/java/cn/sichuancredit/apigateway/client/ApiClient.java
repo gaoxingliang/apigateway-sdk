@@ -69,8 +69,8 @@ public class ApiClient {
 
     public String postJson(String path, String json, boolean needDecryption) {
         createTokenIfNeeded();
-        HttpRequestWithBody req = instance.post(apiConfig.url + path).header(HttpHeaders.AUTHORIZATION, token)
-                .contentType(ContentType.APPLICATION_JSON.getMimeType());
+        String finalBody = json;
+
         if (json != null && json.length() > 0) {
             if (needDecryption) {
                 String key = MySmUtil.generateSm4Key();
@@ -80,11 +80,12 @@ public class ApiClient {
                 encryptedData.put("encryptKey", encryptKey);
                 encryptedData.put("data", data);
                 String encryptedJson = encryptedData.toJSONString();
-                req.body(encryptedJson);
-            } else {
-                req.body(json);
+                finalBody = encryptedJson;
             }
         }
+        RequestBodyEntity req = instance.post(apiConfig.url + path).header(HttpHeaders.AUTHORIZATION, token)
+                .contentType(ContentType.APPLICATION_JSON.getMimeType())
+                .body(finalBody);
 
         return sendOutRequest(needDecryption, req);
     }
