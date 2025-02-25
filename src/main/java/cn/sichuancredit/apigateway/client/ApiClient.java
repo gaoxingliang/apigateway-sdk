@@ -13,6 +13,9 @@ import java.io.*;
 import java.util.*;
 
 public class ApiClient {
+    public static final String HEADER_FORM_ENCRYPTED_FIELDS = "form-encrypted-fields";
+    public static final String HEADER_FORM_ENCRYPTED_FIELDS_NONE = "none";
+
     private final UnirestInstance instance;
     private final ApiConfig apiConfig;
     private volatile String token;
@@ -67,7 +70,7 @@ public class ApiClient {
         }
     }
 
-    public String postJson(String path, String json, boolean needDecryption) {
+    public String postJson(String path, String json, Map<String, String> headers, boolean needDecryption) {
         createTokenIfNeeded();
         String finalBody = json;
 
@@ -87,10 +90,18 @@ public class ApiClient {
                 .contentType(ContentType.APPLICATION_JSON.getMimeType())
                 .body(finalBody);
 
+        if (headers != null) {
+            req = req.headers(headers);
+        }
+
         return sendOutRequest(needDecryption, req);
     }
 
-    public String get(String path, Map<String, Object> queryParameters, boolean needDecryption) {
+    public String postJson(String path, String json, boolean needDecryption) {
+        return postJson(path, json, null, needDecryption);
+    }
+
+    public String get(String path, Map<String, Object> queryParameters, Map<String, String> headers, boolean needDecryption) {
         createTokenIfNeeded();
         GetRequest request = instance.get(apiConfig.url + path)
                 .header(HttpHeaders.AUTHORIZATION, token);
@@ -104,7 +115,36 @@ public class ApiClient {
             });
         }
 
+        if (headers != null) {
+            request.headers(headers);
+        }
+
         return sendOutRequest(needDecryption, request);
+    }
+
+    /**
+     * form参数，form中的值. 目前未对form中的参数进行加密
+     * form中添加文件可以：form.put("file", new File("xxx"));
+     * @param path
+     * @param form
+     * @return
+     */
+    public String postForm(String path, Map<String, String> headers, Map<String, Object> form) {
+        createTokenIfNeeded();
+        HttpRequestWithBody req = instance.post(apiConfig.url + path).header(HttpHeaders.AUTHORIZATION, token);
+        if (headers != null) {
+            req.headers(headers);
+        }
+        HttpRequest finalReq = req;
+        if (form != null) {
+            finalReq = req.fields(form).header(HEADER_FORM_ENCRYPTED_FIELDS, HEADER_FORM_ENCRYPTED_FIELDS_NONE);
+        }
+
+        return sendOutRequest(true, finalReq);
+    }
+
+    public String get(String path, Map<String, Object> queryParameters, boolean needDecryption) {
+        return get(path, queryParameters, null, needDecryption);
     }
 
     private String sendOutRequest(boolean needDecryption, HttpRequest request) {

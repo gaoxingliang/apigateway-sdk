@@ -3,9 +3,10 @@
 文档单独提供。
 ## how to use
 - step1:import this dependency
+Check the latest version at: [maven central](https://mvnrepository.com/artifact/io.gitee.gaoxingliang/apigateway-sdk)
 gradle:
 ```shell
-implementation group: 'io.gitee.gaoxingliang', name: 'apigateway-sdk', version: '0.0.5'
+implementation group: 'io.gitee.gaoxingliang', name: 'apigateway-sdk', version: 'XXXX'
 ```
 
 mvn:
@@ -13,7 +14,7 @@ mvn:
 <dependency>
     <groupId>io.gitee.gaoxingliang</groupId>
     <artifactId>apigateway-sdk</artifactId>
-    <version>0.0.6</version>
+    <version>XXXX</version>
 </dependency>
 ```
 - step 2 refer to test case:
