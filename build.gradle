@@ -10,8 +10,8 @@ compileTestJava.options.encoding = "UTF-8"
 
 apply plugin: 'maven-publish'
 
-group 'io.gitee.gaoxingliang:apigateway-sdk'
-version '0.1.1'
+group 'io.gitee.codeed:apigateway-sdk'
+version '0.2.0'
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
@@ -63,7 +63,7 @@ test {
 publishing {
     publications {
         maven(MavenPublication) {
-            groupId =  "io.gitee.gaoxingliang"
+            groupId =  "io.gitee.codeed"
             artifactId = 'apigateway-sdk'
 
             from components.java
@@ -71,7 +71,7 @@ publishing {
             pom {
                 name = 'apigateway-sdk'
                 description = '四川征信api网关的示例sdk。'
-                url = 'https://gitee.com/gaoxingliang/apigateway-sdk'
+                url = 'https://gitee.com/codeed/apigateway-sdk'
                 inceptionYear = '2024'
                 licenses {
                     license {
@@ -81,14 +81,14 @@ publishing {
                 }
                 developers {
                     developer {
-                        id = 'gaoxingliang'
-                        name = 'gaoxingliang'
+                        id = 'codeed'
+                        name = 'codeed'
                     }
                 }
                 scm {
-                    connection = 'scm:git:https://gitee.com/gaoxingliang/apigateway-sdk.git'
-                    developerConnection = 'scm:git:ssh://gitee.com/gaoxingliang/apigateway-sdk.git'
-                    url = 'https://gitee.com/gaoxingliang/apigateway-sdk.git'
+                    connection = 'scm:git:https://gitee.com/codeed/apigateway-sdk.git'
+                    developerConnection = 'scm:git:ssh://gitee.com/codeed/apigateway-sdk.git'
+                    url = 'https://gitee.com/codeed/apigateway-sdk.git'
                 }
             }
         }
