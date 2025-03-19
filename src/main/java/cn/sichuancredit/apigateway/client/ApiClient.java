@@ -78,7 +78,7 @@ public class ApiClient {
             if (needDecryption) {
                 String key = MySmUtil.generateSm4Key();
                 String encryptKey = MySmUtil.sm2Encrypt(key, apiConfig.publicKey);
-                String data = MySmUtil.sm4Encrypt(json, encryptKey);
+                String data = MySmUtil.sm4Encrypt(json, key);
                 JSONObject encryptedData = new JSONObject();
                 encryptedData.put("encryptKey", encryptKey);
                 encryptedData.put("data", data);
