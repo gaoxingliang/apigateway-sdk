@@ -6,12 +6,14 @@ import cn.hutool.crypto.*;
 import cn.hutool.crypto.asymmetric.*;
 import cn.hutool.crypto.symmetric.*;
 import org.apache.commons.lang3.*;
+import org.bouncycastle.jcajce.provider.asymmetric.ec.*;
+import org.bouncycastle.jce.provider.*;
 
 import java.security.*;
+import java.security.spec.*;
 
 /**
  * 国密 SM2 的非对称加解密和 SM4 的对称加密工具类
- *
  */
 public class MySmUtil {
     /**
@@ -123,5 +125,24 @@ public class MySmUtil {
         }
         SymmetricCrypto sm4 = SmUtil.sm4(Base64.decode(sm4Key));
         return sm4.decryptStr(ciphertext, CharsetUtil.CHARSET_UTF_8);
+    }
+
+    /**
+     * 从 Base64 编码的 SM2 私钥中提取 256 位整数私钥
+     * 因为java本身会添加其他信息
+     *
+     * @param base64PrivateKey Base64 编码的 SM2 私钥
+     * @return 256 位整数私钥
+     */
+    public static byte[] extractPrivateKey(String base64PrivateKey) throws Exception {
+        // 解码 Base64 私钥
+        byte[] privateKeyBytes = Base64.decode(base64PrivateKey);
+
+        // 使用 BouncyCastle 的 KeyFactory 解析私钥
+        KeyFactory keyFactory = KeyFactory.getInstance("EC", BouncyCastleProvider.PROVIDER_NAME);
+        PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
+        BCECPrivateKey privateKey = (BCECPrivateKey) keyFactory.generatePrivate(keySpec);
+
+        return privateKey.getD().toByteArray();
     }
 }
