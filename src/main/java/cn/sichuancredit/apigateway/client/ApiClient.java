@@ -53,7 +53,7 @@ public class ApiClient {
             } catch (Exception e) {
                 throw new ApiException("获取token失败", e);
             }
-            checkResponse(response);
+            checkResponse(response, "获取token失败");
             JSONObject json = JSONObject.parseObject(response.getBody());
             String t = json.getString("rbac_token");
             if (t == null) {
@@ -64,10 +64,16 @@ public class ApiClient {
         }
     }
 
-    private void checkResponse(HttpResponse<String> response) {
+    private void checkResponse(HttpResponse<String> response, String message) {
         if (response.getStatus() != 200 || !response.isSuccess()) {
-            throw new ApiException("请求失败:" + response.getStatus() + " 消息体:" + response.getBody() + " 消息头：" + response.getHeaders());
+            throw generateApiException(response, message);
         }
+    }
+
+    private ApiException generateApiException(HttpResponse<String> response, String message) {
+        return new ApiException(message).setResponseCode(response.getStatus())
+                .setResponseBody(response.getBody())
+                .setResponseHeaders(response.getHeaders());
     }
 
     public String postJson(String path, String json, Map<String, String> headers, boolean needDecryption) {
@@ -154,7 +160,7 @@ public class ApiClient {
         } catch (Exception e) {
             throw new ApiException("请求失败", e);
         }
-        checkResponse(response);
+        checkResponse(response, "请求处理失败");
 
         String result = response.getBody();
         if (needDecryption) {
@@ -163,7 +169,7 @@ public class ApiClient {
                 String sm4Key = MySmUtil.sm2Decrypt(responseEncryptedData.getEncryptKey(), apiConfig.privateKey);
                 result = MySmUtil.sm4Decrypt(responseEncryptedData.getData(), sm4Key);
             } catch (Exception e) {
-                throw new ApiException("解密失败:" + response.getStatus() + " 消息体:" + response.getBody() + " 消息头：" + response.getHeaders(), e);
+                throw generateApiException(response, "解密失败");
             }
         }
         // 需要解压缩的场景
