@@ -3,10 +3,11 @@ package cn.sichuancredit.apigateway.client;
 import cn.hutool.core.util.*;
 import cn.sichuancredit.apigateway.encryption.*;
 import com.alibaba.fastjson2.*;
+import kong.unirest.*;
 import kong.unirest.HttpRequest;
 import kong.unirest.HttpResponse;
-import kong.unirest.*;
 import org.apache.commons.lang3.*;
+import org.apache.commons.logging.*;
 import org.apache.http.*;
 
 import java.io.*;
@@ -15,6 +16,7 @@ import java.util.*;
 public class ApiClient {
     public static final String HEADER_FORM_ENCRYPTED_FIELDS = "form-encrypted-fields";
     public static final String HEADER_FORM_ENCRYPTED_FIELDS_NONE = "none";
+    private static final Log log = LogFactory.getLog(ApiClient.class);
 
     private final UnirestInstance instance;
     private final ApiConfig apiConfig;
@@ -44,16 +46,11 @@ public class ApiClient {
             d.put("appid", apiConfig.app);
             d.put("username", apiConfig.username);
             d.put("password", apiConfig.password);
-            HttpResponse<String> response;
-            try {
-                response = instance.post(apiConfig.url + "/auth/token")
-                        .header("Content-Type", "application/json")
-                        .body(d.toString())
-                        .asString();
-            } catch (Exception e) {
-                throw new ApiException("获取token失败", e);
-            }
-            checkResponse(response, "获取token失败");
+
+            HttpRequest getTokenRequest = instance.post(apiConfig.url + "/auth/token")
+                    .header("Content-Type", "application/json").body(d.toString());
+            HttpResponse<String> response = _sendHttpRequest(getTokenRequest);
+
             JSONObject json = JSONObject.parseObject(response.getBody());
             String t = json.getString("rbac_token");
             if (t == null) {
@@ -153,15 +150,44 @@ public class ApiClient {
         return get(path, queryParameters, null, needDecryption);
     }
 
-    private String sendOutRequest(boolean needDecryption, HttpRequest request) {
-        HttpResponse<String> response;
-        try {
-            response = request.asString();
-        } catch (Exception e) {
-            throw new ApiException("请求失败", e);
-        }
-        checkResponse(response, "请求处理失败");
+    private HttpResponse<String> _sendHttpRequest(HttpRequest request) {
+        HttpResponse<String> response = null;
+        int retryTimes = 3;
+        for (int i = 0; i < retryTimes; i++) {
+            try {
+                response = request.asString();
+            } catch (Exception e) {
+                throw new ApiException("请求失败", e);
+            }
 
+            // 有时候wolf不太稳定，所以这里在retry=true的时候 自动重试下
+            try {
+                checkResponse(response, "请求处理失败");
+                break;
+            } catch (ApiException e) {
+                if (apiConfig.retryHttpHandler != null && apiConfig.retryHttpHandler.retry(response.getStatus(), response.getBody())) {
+                    if (i >= retryTimes - 1) {
+                        log.error("重试后，依然失败");
+                        throw e;
+                    }
+                    try {
+                        log.warn("等待重试请求，当前重试次数：" + i);
+                        Thread.sleep(5000);
+                    } catch (InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                        throw new ApiException("线程中断，退出", e);
+                    }
+                } else {
+                    throw e;
+                }
+            }
+        }
+
+        return response;
+    }
+
+    private String sendOutRequest(boolean needDecryption, HttpRequest request) {
+        HttpResponse<String> response = _sendHttpRequest(request);
         String result = response.getBody();
         if (needDecryption) {
             EncryptedData responseEncryptedData = JSONObject.parseObject(response.getBody(), EncryptedData.class);

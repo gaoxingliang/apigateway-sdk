@@ -18,7 +18,12 @@ public class ApiConfig {
     int proxyPort;
     String proxyUserName;
     String proxyPassword;
+    /**
+     * Automaticly retry certain recoverable errors like socket timeouts.
+     */
     boolean automaticRetries = false;
 
     String app = "data";
+
+    RetryHttpHandler retryHttpHandler = new DefaultRetryHandler();
 }
